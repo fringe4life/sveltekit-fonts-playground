@@ -1,11 +1,19 @@
 # Hint / Blueprint. Service must exist before `render deploys create`.
-# Render's native runtime is `node`; Bun is installed in the build image so
-# adapter-bun can still compile and start (`bun ./build`).
+# Render has no `runtime: bun` (invalid YAML). Native runtime is `node`; that
+# image includes Bun at build *and* runtime (`🟢 bun`) once you pin a version.
+# Without BUN_VERSION / .bun-version (and with no bun.lock here), Render omits Bun.
+# This proves adapter-bun: start MUST be `bun ./build`, not Railway's `node build`.
 services:
   - type: web
     name: sveltekit-fonts-playground
     runtime: node
     plan: free
-    buildCommand: npm i -g bun pnpm@12.14.0 && pnpm install --frozen-lockfile && ADAPTER=bun bun run --bun vite build
+    # npx pnpm — not `corepack enable` (EROFS on Render Node 24 rewriting /usr/bin/pnpm).
+    buildCommand: npx --yes pnpm@12.14.0 install --frozen-lockfile && ADAPTER=bun bun run --bun vite build
     startCommand: bun ./build
     healthCheckPath: /
+    envVars:
+      - key: BUN_VERSION
+        value: 1.4.4
+      - key: ADAPTER
+        value: bun

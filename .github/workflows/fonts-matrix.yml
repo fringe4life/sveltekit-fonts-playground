@@ -237,7 +237,7 @@ jobs:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
           if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
-            echo "Skipping Render: set RENDER_API_KEY and RENDER_SERVICE_ID (create Bun web service once)"
+            echo "Skipping Render: set RENDER_API_KEY and RENDER_SERVICE_ID (create Node-native web service once; start bun ./build)"
             exit 0
           fi
           npm i -g render-cli

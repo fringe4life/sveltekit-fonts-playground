@@ -28,8 +28,8 @@ pnpm preview
 | `cloudflare` | `@sveltejs/adapter-cloudflare` | Cloudflare Workers | `wrangler.jsonc` + `npx wrangler deploy` |
 | `vercel` | `@sveltejs/adapter-vercel` | Vercel | Prebuilt `vercel deploy --prebuilt` (do not remote-rebuild without `ADAPTER`) |
 | `netlify` | `@sveltejs/adapter-netlify` | Netlify | Human **Make public** after first prod deploy |
-| `node` | `@sveltejs/adapter-node` | Railway | `railway.toml` `ADAPTER=node pnpm build` then `node build` |
-| `bun` | `@sveltejs/adapter-bun` | Render | Blueprint `runtime: node`; install Bun, then `ADAPTER=bun bun run --bun vite build` |
+| `node` | `@sveltejs/adapter-node` | Railway | **adapter-node only.** `railway.toml` `ADAPTER=node pnpm build` then `node build`. Render’s Node **runtime** is not this adapter. |
+| `bun` | `@sveltejs/adapter-bun` | Render | Blueprint **`runtime: node`** (`runtime: bun` is invalid). Bun is in Render’s Node native image (`🟢 bun`). Pin `BUN_VERSION` / `.bun-version` ≥ 1.4 (no `bun.lock` here, so omit the pin and Render skips Bun). Build `ADAPTER=bun bun run --bun vite build`. Start **`bun ./build`**, not `node build`. |
 
 ```bash
 ADAPTER=cloudflare pnpm build
@@ -38,6 +38,8 @@ ADAPTER=netlify pnpm build
 ADAPTER=node pnpm build
 ADAPTER=bun bun run --bun vite build
 ```
+
+**Render Node runtime ≠ Railway adapter-node.** Render’s Blueprint language is `runtime: node` (Node.js/Bun native image). That is how you *host* `adapter-bun`. Railway stays `@sveltejs/adapter-node` and `node build`. Do not start the Render service with `node build` — that would not prove Bun.
 
 Jobs must not write two adapters into the same `build/` on one runner (the Actions matrix isolates this).
 
