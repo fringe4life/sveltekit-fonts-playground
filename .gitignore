@@ -1,0 +1,14 @@
+.DS_Store
+node_modules
+/.svelte-kit
+/build
+/.vercel
+/.netlify
+/.wrangler
+/dist
+.env
+.env.*
+!.env.example
+*.log
+.vscode
+.idea

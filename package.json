@@ -1,0 +1,41 @@
+{
+	"name": "sveltekit-fonts-playground",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Public deploy target for the experimental @sveltejs/enhanced-fonts playground. One site, adapter as a build flavor.",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --incremental",
+		"build:static": "ADAPTER=static vite build",
+		"build:cloudflare": "ADAPTER=cloudflare vite build",
+		"build:vercel": "ADAPTER=vercel vite build",
+		"build:netlify": "ADAPTER=netlify vite build",
+		"build:node": "ADAPTER=node vite build",
+		"build:bun": "ADAPTER=bun bun run --bun vite build",
+		"assert:fonts": "node scripts/assert-font-matrix.mjs"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"packageManager": "pnpm@12.14.0",
+	"devDependencies": {
+		"@fontsource/libre-barcode-128-text": "^5.3.0",
+		"@sveltejs/adapter-bun": "^1.0.0",
+		"@sveltejs/adapter-cloudflare": "^8.0.1",
+		"@sveltejs/adapter-netlify": "^7.0.1",
+		"@sveltejs/adapter-node": "^6.0.0",
+		"@sveltejs/adapter-static": "^4.0.0",
+		"@sveltejs/adapter-vercel": "^7.0.1",
+		"@sveltejs/enhanced-fonts": "workspace:*",
+		"@sveltejs/kit": "^3.1.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.0",
+		"svelte": "^5.57.1",
+		"svelte-check": "^4.7.5",
+		"typescript": "^6.0.3",
+		"vite": "^8.2.1",
+		"wrangler": "^4.120.1"
+	}
+}

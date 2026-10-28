@@ -1,0 +1,228 @@
+name: fonts-matrix
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: fonts-matrix-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.adapter }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        adapter: [static, cloudflare, vercel, netlify, node, bun]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.adapter == 'bun'
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure Pages base path
+        if: matrix.adapter == 'static'
+        id: pages
+        continue-on-error: true
+        uses: actions/configure-pages@v5
+
+      - name: Build
+        env:
+          ADAPTER: ${{ matrix.adapter }}
+          BASE_PATH: ${{ matrix.adapter == 'static' && (steps.pages.outputs.base_path || '/sveltekit-fonts-playground') || '' }}
+        run: |
+          if [ "${{ matrix.adapter }}" = "bun" ]; then
+            bun run --bun vite build
+          else
+            pnpm build
+          fi
+
+      - name: Assert font preload matrix
+        if: matrix.adapter == 'static'
+        run: node scripts/assert-font-matrix.mjs build
+
+      - name: Upload adapter output
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.adapter }}
+          path: |
+            build
+            .svelte-kit/cloudflare
+            .vercel/output
+          if-no-files-found: warn
+          retention-days: 7
+
+  pages:
+    name: deploy GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-static
+          path: artifact
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: artifact/build
+          include-hidden-files: true
+
+      - name: Deploy Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+  deploy-cloudflare:
+    name: deploy Cloudflare
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy if token present
+        env:
+          ADAPTER: cloudflare
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Skipping Cloudflare: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID"
+            exit 0
+          fi
+          pnpm build
+          pnpm exec wrangler deploy
+
+  deploy-vercel:
+    name: deploy Vercel
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy if token present
+        env:
+          ADAPTER: vercel
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "Skipping Vercel: set VERCEL_TOKEN (and VERCEL_ORG_ID / VERCEL_PROJECT_ID after first link)"
+            exit 0
+          fi
+          pnpm build
+          pnpm exec vercel --prod --yes --token "$VERCEL_TOKEN"
+          if [ -n "$VERCEL_PROJECT_ID" ]; then
+            pnpm exec vercel project protection disable "$VERCEL_PROJECT_ID" --sso --token "$VERCEL_TOKEN" || true
+          fi
+
+  deploy-netlify:
+    name: deploy Netlify
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy if token present
+        env:
+          ADAPTER: netlify
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "Skipping Netlify: set NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID"
+            exit 0
+          fi
+          pnpm build
+          pnpm dlx netlify-cli deploy --prod --dir=build --auth "$NETLIFY_AUTH_TOKEN" --site "$NETLIFY_SITE_ID"
+          echo "Visibility cannot be flipped from CLI. After the first production URL exists, dashboard → Visitor access → Public."
+
+  deploy-railway:
+    name: deploy Railway
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy if token present
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "Skipping Railway: set RAILWAY_TOKEN (create service + public domain once)"
+            exit 0
+          fi
+          npm i -g @railway/cli
+          if [ -n "$RAILWAY_SERVICE" ]; then
+            railway up --service "$RAILWAY_SERVICE"
+          else
+            railway up
+          fi
+
+  deploy-render:
+    name: deploy Render
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy if token present
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "Skipping Render: set RENDER_API_KEY and RENDER_SERVICE_ID (create Bun web service once)"
+            exit 0
+          fi
+          npm i -g render-cli
+          render deploys create "$RENDER_SERVICE_ID" --confirm

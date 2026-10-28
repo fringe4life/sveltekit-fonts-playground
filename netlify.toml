@@ -1,0 +1,8 @@
+# Hint only. Git-connect is optional; prefer the Actions matrix with ADAPTER=netlify.
+[build]
+  command = "ADAPTER=netlify pnpm build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "22"
+  ADAPTER = "netlify"

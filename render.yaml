@@ -1,0 +1,9 @@
+# Hint / Blueprint. Service must exist before `render deploys create`.
+services:
+  - type: web
+    name: sveltekit-fonts-playground
+    runtime: bun
+    plan: free
+    buildCommand: bun install --frozen-lockfile && ADAPTER=bun bun run --bun vite build
+    startCommand: bun ./build
+    healthCheckPath: /
