@@ -20,6 +20,6 @@ Secrets live in GitHub Actions (or a local env). They are **not** required for a
 | Vercel project exists; protection off | `vercel --prod` |
 | Netlify **Make public** | `netlify deploy --prod` |
 | Railway service + public domain | `railway up` |
-| Render service + Bun runtime | `render deploys create` |
+| Render Node-native web service (Bun in the image; start `bun ./build`) | `render deploys create` |
 
 Details: [github-pages](./github-pages.md) · [cloudflare](./cloudflare.md) · [vercel](./vercel.md) · [netlify](./netlify.md) · [railway](./railway.md) · [render](./render.md)
