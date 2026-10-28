@@ -1,7 +1,15 @@
 import type { Plugin } from 'vite';
 import './ambient.js';
 
-export type CssVariable = `--font-${string}`;
+/** Augmented by `.svelte-kit/experimental-enhanced-fonts.d.ts` after `enhancedFonts()`. */
+export interface ConfiguredFontCssVariables {}
+
+type ConfiguredCssVariable = Extract<keyof ConfiguredFontCssVariables, `--font-${string}`>;
+
+/** Configured `--font-*` names, or any `--font-*` before generation. */
+export type CssVariable = [ConfiguredCssVariable] extends [never]
+	? `--font-${string}`
+	: ConfiguredCssVariable;
 
 export type FontDisplay = 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
 

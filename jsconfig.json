@@ -4,5 +4,5 @@
 		"checkJs": true,
 		"moduleResolution": "bundler"
 	},
-	"include": ["src", "vite.config.js"]
+	"include": ["src", "vite.config.js", ".svelte-kit/experimental-enhanced-fonts.d.ts"]
 }

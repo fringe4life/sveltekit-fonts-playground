@@ -1,7 +1,15 @@
 # Vercel (`ADAPTER=vercel`)
 
 - **Vendor:** Vercel
-- **CLI:** `ADAPTER=vercel pnpm build` then `npx vercel --prod --yes` (token: `--token $VERCEL_TOKEN`). CI may also need `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
+- **CLI:** Keep the local `ADAPTER=vercel` output with a prebuilt deploy (token: `--token $VERCEL_TOKEN`). CI needs `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` after the first `vercel link`:
+
+  ```bash
+  ADAPTER=vercel pnpm exec vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+  ADAPTER=vercel pnpm exec vercel build --prod --token "$VERCEL_TOKEN"
+  pnpm exec vercel deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
+  ```
+
+  Do not run `vercel --prod` against source: the remote build has no `ADAPTER` and falls back to `adapter-static`.
 - **Public:** After the first production project exists:
 
   ```bash

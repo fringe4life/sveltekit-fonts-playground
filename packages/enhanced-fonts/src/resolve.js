@@ -82,7 +82,7 @@ export async function resolve_families(families, ctx) {
 	const file_by_hash = new Map();
 
 	const assets_dir = ctx.assets_dir.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
-	const base = (ctx.base ?? '/').replace(/\/+$/, '') || '';
+	const base = ctx.base ?? '/';
 
 	for (const family of validated) {
 		/** @type {Array<{ url: string; weight: string; style: string; subset?: string; unicode_range?: string }>} */
@@ -179,7 +179,7 @@ function emit_bytes_face(face, family, assets_dir, base, files, file_by_hash) {
 	}
 
 	const file_name = `${assets_dir}/fonts/${slug(family.name)}-${face.weight}-${face.style}.${hash}.woff2`;
-	const url = `${base}/${file_name}`.replace(/\/{2,}/g, '/');
+	const url = join_font_url(base, file_name);
 	const emitted = { file_name, source: face.bytes, url };
 	file_by_hash.set(hash, emitted);
 	files.push(emitted);
@@ -190,6 +190,29 @@ function emit_bytes_face(face, family, assets_dir, base, files, file_by_hash) {
 		subset: face.subset,
 		unicode_range: face.unicode_range
 	};
+}
+
+/**
+ * Join Vite `base` with an emitted font path without collapsing `https://` to `https:/`.
+ * Repeated slashes are normalized only in the path portion.
+ *
+ * @param {string} base
+ * @param {string} file_name
+ * @returns {string}
+ */
+export function join_font_url(base, file_name) {
+	const relative = file_name.replace(/^\/+/, '').replace(/\/{2,}/g, '/');
+	const raw = base || '/';
+	if (raw === '/' || raw === '') {
+		return `/${relative}`;
+	}
+	if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+		const abs = raw.endsWith('/') ? raw : `${raw}/`;
+		return new URL(relative, abs).href;
+	}
+	const prefix = raw.replace(/\/+$/, '');
+	const joined = `${prefix}/${relative}`.replace(/\/{2,}/g, '/');
+	return joined.startsWith('/') || joined.startsWith('.') ? joined : `/${joined}`;
 }
 
 /**

@@ -87,10 +87,23 @@ jobs:
           name: build-static
           path: artifact
 
+      # upload-artifact@v4 may keep `build/` or flatten its contents. Accept either.
+      - name: Normalize Pages directory
+        run: |
+          if [ -f artifact/index.html ]; then
+            mv artifact pages-dist
+          elif [ -f artifact/build/index.html ]; then
+            mv artifact/build pages-dist
+          else
+            echo "Could not find index.html in the static artifact" >&2
+            find artifact -maxdepth 4 || true
+            exit 1
+          fi
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: artifact/build
+          path: pages-dist
           include-hidden-files: true
 
       - name: Deploy Pages
@@ -151,8 +164,11 @@ jobs:
             echo "Skipping Vercel: set VERCEL_TOKEN (and VERCEL_ORG_ID / VERCEL_PROJECT_ID after first link)"
             exit 0
           fi
-          pnpm build
-          pnpm exec vercel --prod --yes --token "$VERCEL_TOKEN"
+          # Prebuilt deploy keeps the ADAPTER=vercel output. `vercel --prod` would rebuild
+          # remotely without ADAPTER and fall back to adapter-static.
+          pnpm exec vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          ADAPTER=vercel pnpm exec vercel build --prod --token "$VERCEL_TOKEN"
+          pnpm exec vercel deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN"
           if [ -n "$VERCEL_PROJECT_ID" ]; then
             pnpm exec vercel project protection disable "$VERCEL_PROJECT_ID" --sso --token "$VERCEL_TOKEN" || true
           fi

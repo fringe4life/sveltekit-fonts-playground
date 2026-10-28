@@ -26,10 +26,10 @@ pnpm preview
 | --- | --- | --- | --- |
 | `static` (default) | `@sveltejs/adapter-static` | GitHub Pages | CI sets `BASE_PATH` via `actions/configure-pages` |
 | `cloudflare` | `@sveltejs/adapter-cloudflare` | Cloudflare Workers | `wrangler.jsonc` + `npx wrangler deploy` |
-| `vercel` | `@sveltejs/adapter-vercel` | Vercel | Production URL only; disable SSO protection |
+| `vercel` | `@sveltejs/adapter-vercel` | Vercel | Prebuilt `vercel deploy --prebuilt` (do not remote-rebuild without `ADAPTER`) |
 | `netlify` | `@sveltejs/adapter-netlify` | Netlify | Human **Make public** after first prod deploy |
-| `node` | `@sveltejs/adapter-node` | Railway | `node build` / `PORT` |
-| `bun` | `@sveltejs/adapter-bun` | Render | `bun run --bun build` then `bun ./build` |
+| `node` | `@sveltejs/adapter-node` | Railway | `railway.toml` `ADAPTER=node pnpm build` then `node build` |
+| `bun` | `@sveltejs/adapter-bun` | Render | Blueprint `runtime: node`; install Bun, then `ADAPTER=bun bun run --bun vite build` |
 
 ```bash
 ADAPTER=cloudflare pnpm build

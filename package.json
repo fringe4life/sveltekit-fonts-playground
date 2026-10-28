@@ -15,7 +15,8 @@
 		"build:netlify": "ADAPTER=netlify vite build",
 		"build:node": "ADAPTER=node vite build",
 		"build:bun": "ADAPTER=bun bun run --bun vite build",
-		"assert:fonts": "node scripts/assert-font-matrix.mjs"
+		"assert:fonts": "node scripts/assert-font-matrix.mjs",
+		"test": "pnpm --filter @sveltejs/enhanced-fonts test"
 	},
 	"engines": {
 		"node": ">=22"
@@ -35,6 +36,7 @@
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.7.5",
 		"typescript": "^6.0.3",
+		"vercel": "^48.12.1",
 		"vite": "^8.2.1",
 		"wrangler": "^4.120.1"
 	}

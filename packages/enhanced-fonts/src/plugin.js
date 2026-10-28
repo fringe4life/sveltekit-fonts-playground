@@ -23,6 +23,11 @@ export function enhancedFonts(options = { families: [] }) {
 	/** @type {ResolvedFamilies | undefined} */
 	let resolved;
 
+	write_css_variable_types(
+		families,
+		path.join(process.cwd(), '.svelte-kit/experimental-enhanced-fonts.d.ts')
+	);
+
 	async function ensure_resolved() {
 		if (resolved) return resolved;
 		if (!resolving) {
@@ -34,10 +39,6 @@ export function enhancedFonts(options = { families: [] }) {
 			})
 				.then((value) => {
 					resolved = value;
-					write_css_variable_types(
-						families,
-						path.join(vite_config.root, '.svelte-kit/experimental-enhanced-fonts.d.ts')
-					);
 					return value;
 				})
 				.catch((error) => {
@@ -56,6 +57,10 @@ export function enhancedFonts(options = { families: [] }) {
 		name: 'vite-plugin-enhanced-fonts',
 		configResolved(config) {
 			vite_config = config;
+			write_css_variable_types(
+				families,
+				path.join(vite_config.root, '.svelte-kit/experimental-enhanced-fonts.d.ts')
+			);
 			const kit_index = config.plugins.findIndex(
 				(plugin) => plugin.name === 'vite-plugin-sveltekit-setup'
 			);

@@ -20,7 +20,9 @@
 	"license": "MIT",
 	"homepage": "https://svelte.dev/docs/kit",
 	"type": "module",
-	"scripts": {},
+	"scripts": {
+		"test": "node --test src/join-url.test.js"
+	},
 	"files": [
 		"src",
 		"types"

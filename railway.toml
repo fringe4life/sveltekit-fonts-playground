@@ -1,6 +1,7 @@
 # Hint only. Prefer ADAPTER=node in CI, then `railway up`.
 [build]
 builder = "NIXPACKS"
+buildCommand = "ADAPTER=node pnpm build"
 
 [deploy]
 startCommand = "node build"
