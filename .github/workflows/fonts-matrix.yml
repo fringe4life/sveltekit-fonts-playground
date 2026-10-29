@@ -240,7 +240,7 @@ jobs:
             echo "Skipping Render bun: set RENDER_API_KEY and RENDER_SERVICE_ID (existing bun web service; start bun ./build)"
             exit 0
           fi
-          npm i -g render-cli
+          npm i -g --ignore-scripts render-cli@0.3.2
           render deploys create "$RENDER_SERVICE_ID" --confirm
 
   deploy-render-node:
@@ -258,5 +258,5 @@ jobs:
             echo "Skipping Render node: set RENDER_API_KEY and RENDER_NODE_SERVICE_ID (second free web service; start node build)"
             exit 0
           fi
-          npm i -g render-cli
+          npm i -g --ignore-scripts render-cli@0.3.2
           render deploys create "$RENDER_NODE_SERVICE_ID" --confirm
