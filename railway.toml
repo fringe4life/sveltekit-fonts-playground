@@ -1,4 +1,7 @@
-# Hint only. Prefer ADAPTER=node in CI, then `railway up`.
+# Leftover hint only. Canonical adapter-node host is Render
+# (render.yaml sveltekit-fonts-playground-node, start `node build`).
+# Prefer ADAPTER=node in CI, then optional `railway up`.
+
 [build]
 builder = "NIXPACKS"
 buildCommand = "ADAPTER=node pnpm build"

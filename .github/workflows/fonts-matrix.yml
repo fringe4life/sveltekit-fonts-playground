@@ -203,7 +203,7 @@ jobs:
           echo "Visibility cannot be flipped from CLI. After the first production URL exists, dashboard → Visitor access → Public."
 
   deploy-railway:
-    name: deploy Railway
+    name: deploy Railway leftover
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -215,7 +215,7 @@ jobs:
           RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE }}
         run: |
           if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "Skipping Railway: set RAILWAY_TOKEN (create service + public domain once)"
+            echo "Skipping Railway leftover: canonical adapter-node is Render (RENDER_NODE_SERVICE_ID). Optional RAILWAY_TOKEN skipped."
             exit 0
           fi
           npm i -g @railway/cli
@@ -225,8 +225,8 @@ jobs:
             railway up
           fi
 
-  deploy-render:
-    name: deploy Render
+  deploy-render-bun:
+    name: deploy Render bun
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -237,8 +237,26 @@ jobs:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
           if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
-            echo "Skipping Render: set RENDER_API_KEY and RENDER_SERVICE_ID (create Node-native web service once; start bun ./build)"
+            echo "Skipping Render bun: set RENDER_API_KEY and RENDER_SERVICE_ID (existing bun web service; start bun ./build)"
             exit 0
           fi
-          npm i -g render-cli
+          npm i -g --ignore-scripts render-cli@0.3.2
           render deploys create "$RENDER_SERVICE_ID" --confirm
+
+  deploy-render-node:
+    name: deploy Render node
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy if token present
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_NODE_SERVICE_ID: ${{ secrets.RENDER_NODE_SERVICE_ID }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_NODE_SERVICE_ID" ]; then
+            echo "Skipping Render node: set RENDER_API_KEY and RENDER_NODE_SERVICE_ID (second free web service; start node build)"
+            exit 0
+          fi
+          npm i -g --ignore-scripts render-cli@0.3.2
+          render deploys create "$RENDER_NODE_SERVICE_ID" --confirm

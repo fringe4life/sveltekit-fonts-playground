@@ -28,8 +28,9 @@ pnpm preview
 | `cloudflare` | `@sveltejs/adapter-cloudflare` | Cloudflare Workers | `wrangler.jsonc` + `npx wrangler deploy` |
 | `vercel` | `@sveltejs/adapter-vercel` | Vercel | Prebuilt `vercel deploy --prebuilt` (do not remote-rebuild without `ADAPTER`) |
 | `netlify` | `@sveltejs/adapter-netlify` | Netlify | Human **Make public** after first prod deploy |
-| `node` | `@sveltejs/adapter-node` | Railway | **adapter-node only.** `railway.toml` `ADAPTER=node pnpm build` then `node build`. Render’s Node **runtime** is not this adapter. |
-| `bun` | `@sveltejs/adapter-bun` | Render | Blueprint **`runtime: node`** (`runtime: bun` is invalid). Bun is in Render’s Node native image (`🟢 bun`). Pin `BUN_VERSION` / `.bun-version` ≥ 1.4 (no `bun.lock` here, so omit the pin and Render skips Bun). Build `ADAPTER=bun bun run --bun vite build`. Start **`bun ./build`**, not `node build`. |
+| `node` | `@sveltejs/adapter-node` | Render (second free Web Service) | **adapter-node only.** Blueprint service `sveltekit-fonts-playground-node`: `ADAPTER=node pnpm build`, start **`node build`**. Do not pin Bun or start `bun ./build` here. Railway (`railway.toml`) is leftover/optional. |
+| `bun` | `@sveltejs/adapter-bun` | Render (existing free Web Service) | Blueprint **`runtime: node`** (`runtime: bun` is invalid). Bun is in Render’s Node native image (`🟢 bun`). Pin `BUN_VERSION` / `.bun-version` ≥ 1.4 (no `bun.lock` here, so omit the pin and Render skips Bun). Build `ADAPTER=bun bun run --bun vite build`. Start **`bun ./build`**, not `node build`. |
+
 
 ```bash
 ADAPTER=cloudflare pnpm build
@@ -39,7 +40,8 @@ ADAPTER=node pnpm build
 ADAPTER=bun bun run --bun vite build
 ```
 
-**Render Node runtime ≠ Railway adapter-node.** Render’s Blueprint language is `runtime: node` (Node.js/Bun native image). That is how you *host* `adapter-bun`. Railway stays `@sveltejs/adapter-node` and `node build`. Do not start the Render service with `node build` — that would not prove Bun.
+**Two Render apps, two adapters — do not collapse them.** Both Blueprints use `runtime: node` (the host image). The **bun** service (`sveltekit-fonts-playground`) starts `bun ./build`. The **node** service (`sveltekit-fonts-playground-node`) starts `node build`. Each free instance sleeps on its own (~15 min idle → ~1 min wake) — two cold starts, not a login wall. Railway is leftover only.
+
 
 Jobs must not write two adapters into the same `build/` on one runner (the Actions matrix isolates this).
 
@@ -65,6 +67,8 @@ Assert **HTML** (`@font-face` / preload links), not “the network downloaded it
 ## GitHub Actions
 
 [`.github/workflows/fonts-matrix.yml`](./.github/workflows/fonts-matrix.yml) builds every adapter. Deploys run only when the matching secret exists; missing tokens skip that host (the job still passes). Pages uses `GITHUB_TOKEN`.
+
+Render deploys are **two jobs**: bun (`RENDER_API_KEY` + `RENDER_SERVICE_ID`) and node (`RENDER_API_KEY` + `RENDER_NODE_SERVICE_ID`). Create the second free Web Service once (Blueprint or dashboard), then add `RENDER_NODE_SERVICE_ID` in repo Actions secrets. Do not point both jobs at the same service id.
 
 ## Takedown
 

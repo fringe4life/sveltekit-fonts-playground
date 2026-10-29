@@ -8,8 +8,9 @@ Canonical discussion URLs must load **logged-out** (incognito). Prefer productio
 | `cloudflare` | Cloudflare | `npx wrangler deploy` | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` | Yes by default (leave Access off) |
 | `vercel` | Vercel | `npx vercel --prod --yes` | `VERCEL_TOKEN` (+ org/project ids for CI) | CLI: `vercel project protection disable <project> --sso`. Share **production**, not preview |
 | `netlify` | Netlify | `npx netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN` | `NETLIFY_AUTH_TOKEN` + `NETLIFY_SITE_ID` | **No CLI for visibility.** Dashboard **Make public** after first production deploy |
-| `node` | Railway | `railway up --service …` | `RAILWAY_TOKEN` | Public generated HTTP domain; generate it once |
-| `bun` | Render | `render deploys create $SERVICE_ID --confirm` | `RENDER_API_KEY` + `RENDER_SERVICE_ID` | Public web service; cold start on free tier |
+| `node` | Render (second service) | `render deploys create $RENDER_NODE_SERVICE_ID --confirm` | `RENDER_API_KEY` + `RENDER_NODE_SERVICE_ID` | Public web service; **own** free-tier cold start |
+| `bun` | Render (existing service) | `render deploys create $RENDER_SERVICE_ID --confirm` | `RENDER_API_KEY` + `RENDER_SERVICE_ID` | Public web service; **own** free-tier cold start |
+
 
 Secrets live in GitHub Actions (or a local env). They are **not** required for a green matrix: deploy steps skip when empty. Do not put them in the Kit monorepo.
 
@@ -19,7 +20,8 @@ Secrets live in GitHub Actions (or a local env). They are **not** required for a
 | Cloudflare Worker/Pages project name | `wrangler deploy` |
 | Vercel project exists; protection off | `vercel --prod` |
 | Netlify **Make public** | `netlify deploy --prod` |
-| Railway service + public domain | `railway up` |
-| Render Node-native web service (Bun in the image; start `bun ./build`) | `render deploys create` |
+| Render bun service (existing; start `bun ./build`) | `render deploys create` with `RENDER_SERVICE_ID` |
+| Render node service (second free app; start `node build`) + `RENDER_NODE_SERVICE_ID` secret | `render deploys create` with `RENDER_NODE_SERVICE_ID` |
+| Optional Railway leftover | `railway up` if `RAILWAY_TOKEN` is set |
 
-Details: [github-pages](./github-pages.md) · [cloudflare](./cloudflare.md) · [vercel](./vercel.md) · [netlify](./netlify.md) · [railway](./railway.md) · [render](./render.md)
+Details: [github-pages](./github-pages.md) · [cloudflare](./cloudflare.md) · [vercel](./vercel.md) · [netlify](./netlify.md) · [render](./render.md) · [render-node](./render-node.md) · [railway](./railway.md) leftover

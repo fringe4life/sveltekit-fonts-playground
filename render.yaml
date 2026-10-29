@@ -1,8 +1,13 @@
-# Hint / Blueprint. Service must exist before `render deploys create`.
-# Render has no `runtime: bun` (invalid YAML). Native runtime is `node`; that
-# image includes Bun at build *and* runtime (`🟢 bun`) once you pin a version.
+# Hint / Blueprint. Two free Web Services — do not collapse bun and node.
+# Services must exist (dashboard or Blueprint sync) before `render deploys create`.
+# Render has no `runtime: bun` (invalid YAML). Native runtime is `node` for both.
+#
+# bun service: Bun is in the Node native image (`🟢 bun`) once you pin a version.
 # Without BUN_VERSION / .bun-version (and with no bun.lock here), Render omits Bun.
-# This proves adapter-bun: start MUST be `bun ./build`, not Railway's `node build`.
+# Start MUST be `bun ./build`. Do not `node build` on this service.
+#
+# node service: ADAPTER=node, start `node build`. No Bun pin — that is the bun service.
+# Each free instance sleeps independently (~15 min idle → ~1 min wake).
 services:
   - type: web
     name: sveltekit-fonts-playground
@@ -17,3 +22,16 @@ services:
         value: 1.4.4
       - key: ADAPTER
         value: bun
+
+  - type: web
+    name: sveltekit-fonts-playground-node
+    runtime: node
+    plan: free
+    buildCommand: npx --yes pnpm@12.14.0 install --frozen-lockfile && ADAPTER=node pnpm build
+    startCommand: node build
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: ADAPTER
+        value: node
