@@ -240,7 +240,11 @@ jobs:
             echo "Skipping Render bun: set RENDER_API_KEY and RENDER_SERVICE_ID (existing bun web service; start bun ./build)"
             exit 0
           fi
-          npm i -g --ignore-scripts render-cli@0.3.2
+          # Official Go CLI (render-oss/cli). npm `render-cli` is an unrelated HTML templater.
+          curl -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
+          echo "038bd9b47f8737b560bcddb3c5d59e04114b8ea002b05bba144e52e56e2a824e  render.zip" | sha256sum -c -
+          unzip -q render.zip
+          sudo mv cli_v2.33.0 /usr/local/bin/render
           render deploys create "$RENDER_SERVICE_ID" --confirm
 
   deploy-render-node:
@@ -258,5 +262,9 @@ jobs:
             echo "Skipping Render node: set RENDER_API_KEY and RENDER_NODE_SERVICE_ID (second free web service; start node build)"
             exit 0
           fi
-          npm i -g --ignore-scripts render-cli@0.3.2
+          # Official Go CLI (render-oss/cli). npm `render-cli` is an unrelated HTML templater.
+          curl -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
+          echo "038bd9b47f8737b560bcddb3c5d59e04114b8ea002b05bba144e52e56e2a824e  render.zip" | sha256sum -c -
+          unzip -q render.zip
+          sudo mv cli_v2.33.0 /usr/local/bin/render
           render deploys create "$RENDER_NODE_SERVICE_ID" --confirm
