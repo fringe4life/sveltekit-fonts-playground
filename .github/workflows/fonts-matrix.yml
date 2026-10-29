@@ -241,7 +241,7 @@ jobs:
             exit 0
           fi
           # Official Go CLI (render-oss/cli). npm `render-cli` is an unrelated HTML templater.
-          curl -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
+          curl --proto '=https' --tlsv1.2 -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
           echo "038bd9b47f8737b560bcddb3c5d59e04114b8ea002b05bba144e52e56e2a824e  render.zip" | sha256sum -c -
           unzip -q render.zip
           sudo mv cli_v2.33.0 /usr/local/bin/render
@@ -263,7 +263,7 @@ jobs:
             exit 0
           fi
           # Official Go CLI (render-oss/cli). npm `render-cli` is an unrelated HTML templater.
-          curl -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
+          curl --proto '=https' --tlsv1.2 -fsSL -o render.zip https://github.com/render-oss/cli/releases/download/v2.33.0/cli_2.33.0_linux_amd64.zip
           echo "038bd9b47f8737b560bcddb3c5d59e04114b8ea002b05bba144e52e56e2a824e  render.zip" | sha256sum -c -
           unzip -q render.zip
           sudo mv cli_v2.33.0 /usr/local/bin/render
