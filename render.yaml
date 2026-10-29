@@ -14,7 +14,9 @@ services:
     runtime: node
     plan: free
     # npx pnpm — not `corepack enable` (EROFS on Render Node 24 rewriting /usr/bin/pnpm).
-    buildCommand: npx --yes pnpm@12.14.0 install --frozen-lockfile && ADAPTER=bun bun run --bun vite build
+    # bun run vite looks up a package.json script named "vite" (there isn't one).
+    # bunx resolves node_modules after the same pnpm install the node service uses.
+    buildCommand: npx --yes pnpm@12.14.0 install --frozen-lockfile && ADAPTER=bun bunx --bun vite build
     startCommand: bun ./build
     healthCheckPath: /
     envVars:

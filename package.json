@@ -14,7 +14,7 @@
 		"build:vercel": "ADAPTER=vercel vite build",
 		"build:netlify": "ADAPTER=netlify vite build",
 		"build:node": "ADAPTER=node vite build",
-		"build:bun": "ADAPTER=bun bun run --bun vite build",
+		"build:bun": "ADAPTER=bun bunx --bun vite build",
 		"assert:fonts": "node scripts/assert-font-matrix.mjs",
 		"test": "pnpm --filter @sveltejs/enhanced-fonts test"
 	},
