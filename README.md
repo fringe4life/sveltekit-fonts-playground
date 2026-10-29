@@ -4,6 +4,25 @@ Public **one-site** demo for experimental [`@sveltejs/enhanced-fonts`](./package
 
 One app. Adapter is a **build flavor** (`ADAPTER=static|cloudflare|vercel|netlify|node|bun`), not six apps.
 
+## Live demos
+
+Production URLs (one site, six hosts). All must load **logged-out** — no vendor SSO.
+
+| Adapter | Host | URL |
+| --- | --- | --- |
+| `adapter-static` | GitHub Pages | https://fringe4life.github.io/sveltekit-fonts-playground/ |
+| `adapter-bun` | Render (bun) | https://sveltekit-fonts-playground-bun.onrender.com/ |
+| `adapter-node` | Render (node) | https://sveltekit-fonts-playground-node.onrender.com/ |
+| `adapter-vercel` | Vercel | https://sveltekit-fonts-playground-scly.vercel.app/ |
+| `adapter-cloudflare` | Cloudflare | https://sveltekit-fonts-playground.coinnich09.workers.dev/ |
+| `adapter-netlify` | Netlify | https://svelte-fonts.netlify.app/ |
+
+**GitHub Pages `base`:** the app is served under `/sveltekit-fonts-playground` (`paths.base` / `BASE_PATH`). Routes are `/sveltekit-fonts-playground/`, `/sveltekit-fonts-playground/about`, `/sveltekit-fonts-playground/display`. Other hosts use `/`, `/about`, `/display`.
+
+**Render free tier:** both Web Services **sleep** after ~15 min idle. The first request can take up to about a minute (sometimes longer) to wake. That is a cold start, not a login wall. Each service sleeps independently.
+
+**Vercel and Netlify must be public.** Do not leave Vercel Authentication / SSO or Netlify password / Visitor-access SSO in front of production. Share these production domains, not previews. Do not use `?x-vercel-protection-bypass=`.
+
 ## Run
 
 ```bash
