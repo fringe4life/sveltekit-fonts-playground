@@ -50,7 +50,7 @@ jobs:
           BASE_PATH: ${{ matrix.adapter == 'static' && (steps.pages.outputs.base_path || '/sveltekit-fonts-playground') || '' }}
         run: |
           if [ "${{ matrix.adapter }}" = "bun" ]; then
-            bun run --bun vite build
+            bunx --bun vite build
           else
             pnpm build
           fi

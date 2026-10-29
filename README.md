@@ -29,7 +29,7 @@ pnpm preview
 | `vercel` | `@sveltejs/adapter-vercel` | Vercel | Prebuilt `vercel deploy --prebuilt` (do not remote-rebuild without `ADAPTER`) |
 | `netlify` | `@sveltejs/adapter-netlify` | Netlify | Human **Make public** after first prod deploy |
 | `node` | `@sveltejs/adapter-node` | Render (second free Web Service) | **adapter-node only.** Blueprint service `sveltekit-fonts-playground-node`: `ADAPTER=node pnpm build`, start **`node build`**. Do not pin Bun or start `bun ./build` here. Railway (`railway.toml`) is leftover/optional. |
-| `bun` | `@sveltejs/adapter-bun` | Render (existing free Web Service) | Blueprint **`runtime: node`** (`runtime: bun` is invalid). Bun is in Render’s Node native image (`🟢 bun`). Pin `BUN_VERSION` / `.bun-version` ≥ 1.4 (no `bun.lock` here, so omit the pin and Render skips Bun). Build `ADAPTER=bun bun run --bun vite build`. Start **`bun ./build`**, not `node build`. |
+| `bun` | `@sveltejs/adapter-bun` | Render (existing free Web Service) | Blueprint **`runtime: node`** (`runtime: bun` is invalid). Bun is in Render’s Node native image (`🟢 bun`). Pin `BUN_VERSION` / `.bun-version` ≥ 1.4 (no `bun.lock` here, so omit the pin and Render skips Bun). Build `ADAPTER=bun bunx --bun vite build` (not `bun run vite` — that looks for a script named `vite`). Start **`bun ./build`**, not `node build`. |
 
 
 ```bash
@@ -37,7 +37,7 @@ ADAPTER=cloudflare pnpm build
 ADAPTER=vercel pnpm build
 ADAPTER=netlify pnpm build
 ADAPTER=node pnpm build
-ADAPTER=bun bun run --bun vite build
+ADAPTER=bun bunx --bun vite build
 ```
 
 **Two Render apps, two adapters — do not collapse them.** Both Blueprints use `runtime: node` (the host image). The **bun** service (`sveltekit-fonts-playground`) starts `bun ./build`. The **node** service (`sveltekit-fonts-playground-node`) starts `node build`. Each free instance sleeps on its own (~15 min idle → ~1 min wake) — two cold starts, not a login wall. Railway is leftover only.
