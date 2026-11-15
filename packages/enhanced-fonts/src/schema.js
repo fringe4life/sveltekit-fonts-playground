@@ -21,8 +21,6 @@ export function validate_families(families) {
 
 	/** @type {FontFamily[]} */
 	const validated = [];
-	/** @type {Set<string>} */
-	const seen_css_variables = new Set();
 
 	for (const [index, family] of families.entries()) {
 		if (!family || typeof family !== 'object') {
@@ -49,14 +47,18 @@ export function validate_families(families) {
 			throw new Error(`families[${index}] local provider requires src`);
 		}
 
-		if (seen_css_variables.has(cssVariable)) {
+		validated.push(/** @type {FontFamily} */ (family));
+	}
+
+	/** @type {Set<string>} */
+	const css_variables = new Set();
+	for (const family of validated) {
+		if (css_variables.has(family.cssVariable)) {
 			throw new Error(
-				`Duplicate Font for ${cssVariable}: configure each --font-* once in enhancedFonts({ families })`
+				`enhancedFonts({ families }) cssVariable ${JSON.stringify(family.cssVariable)} is duplicated`
 			);
 		}
-		seen_css_variables.add(cssVariable);
-
-		validated.push(/** @type {FontFamily} */ (family));
+		css_variables.add(family.cssVariable);
 	}
 
 	return validated;

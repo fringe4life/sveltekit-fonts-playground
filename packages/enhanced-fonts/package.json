@@ -25,7 +25,8 @@
 	},
 	"files": [
 		"src",
-		"types"
+		"types",
+		"eslint"
 	],
 	"exports": {
 		".": {
@@ -36,6 +37,10 @@
 			"types": "./src/Font.svelte.d.ts",
 			"svelte": "./src/Font.svelte",
 			"default": "./src/Font.svelte"
+		},
+		"./eslint": {
+			"types": "./eslint/index.d.ts",
+			"import": "./eslint/index.js"
 		},
 		"./package.json": "./package.json"
 	},
