@@ -60,11 +60,83 @@ export function merge_families(families) {
 			existing.src = [...(existing.src ?? []), ...family.src];
 		}
 		if (family.weights?.length) {
-			existing.weights = [...new Set([...(existing.weights ?? []), ...family.weights])];
+			existing.weights = unique_strings(existing.weights, family.weights);
+		}
+		if (family.styles?.length) {
+			existing.styles = /** @type {FontFamily['styles']} */ (
+				unique_strings(existing.styles, family.styles)
+			);
+		}
+		if (family.subsets?.length) {
+			existing.subsets = unique_strings(existing.subsets, family.subsets);
 		}
 	}
 
 	return [...merged.values()];
+}
+
+/**
+ * @param {string[] | undefined} existing
+ * @param {string[]} incoming
+ * @returns {string[]}
+ */
+function unique_strings(existing, incoming) {
+	return [...new Set([...(existing ?? []), ...incoming])];
+}
+
+/**
+ * Root-relative when Vite's base is `./` (Kit `paths.relative`), so nested
+ * routes do not resolve fonts against the document directory.
+ *
+ * @param {string | undefined} vite_base
+ * @param {string} [kit_paths_base]
+ * @returns {string}
+ */
+export function font_public_base(vite_base, kit_paths_base = '') {
+	const b = vite_base ?? '/';
+	if (/^[a-z][a-z0-9+.-]*:/i.test(b) || b.startsWith('//')) {
+		return b;
+	}
+	if (b === './' || b === '.') {
+		return (kit_paths_base ?? '').replace(/\/+$/, '');
+	}
+	return b;
+}
+
+/**
+ * @param {{ base?: string; define?: Record<string, string> }} config
+ * @returns {string}
+ */
+export function font_base_from_vite_config(config) {
+	let kit_paths_base = '';
+	const raw = config.define?.__SVELTEKIT_PATHS_BASE__;
+	if (typeof raw === 'string') {
+		try {
+			const parsed = JSON.parse(raw);
+			if (typeof parsed === 'string') kit_paths_base = parsed;
+		} catch {
+			// ignore invalid define replacements
+		}
+	}
+	return font_public_base(config.base, kit_paths_base);
+}
+
+/**
+ * @param {string} base
+ * @param {string} file_name
+ * @returns {string}
+ */
+export function join_font_url(base, file_name) {
+	const file = file_name.replace(/^\/+/, '');
+	if (/^[a-z][a-z0-9+.-]*:/i.test(base) || base.startsWith('//')) {
+		const origin = base.endsWith('/') ? base : `${base}/`;
+		return new URL(file, origin).href;
+	}
+	if (!base || base === '/' || base === '.' || base === './') {
+		return `/${file}`;
+	}
+	const prefix = base.replace(/\/+$/, '');
+	return `${prefix}/${file}`.replace(/\/{2,}/g, '/');
 }
 
 /**
@@ -190,29 +262,6 @@ function emit_bytes_face(face, family, assets_dir, base, files, file_by_hash) {
 		subset: face.subset,
 		unicode_range: face.unicode_range
 	};
-}
-
-/**
- * Join Vite `base` with an emitted font path without collapsing `https://` to `https:/`.
- * Repeated slashes are normalized only in the path portion.
- *
- * @param {string} base
- * @param {string} file_name
- * @returns {string}
- */
-export function join_font_url(base, file_name) {
-	const relative = file_name.replace(/^\/+/, '').replace(/\/{2,}/g, '/');
-	const raw = base || '/';
-	if (raw === '/' || raw === '') {
-		return `/${relative}`;
-	}
-	if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
-		const abs = raw.endsWith('/') ? raw : `${raw}/`;
-		return new URL(relative, abs).href;
-	}
-	const prefix = raw.replace(/\/+$/, '');
-	const joined = `${prefix}/${relative}`.replace(/\/{2,}/g, '/');
-	return joined.startsWith('/') || joined.startsWith('.') ? joined : `/${joined}`;
 }
 
 /**

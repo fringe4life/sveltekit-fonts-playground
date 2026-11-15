@@ -7,6 +7,8 @@
 
 	const data = $derived(get_font(cssVariable));
 	const links = $derived(filter_preloads(data.preloads, preload));
+	// Same cssVariable twice in one document must throw at SSR/build (not merge).
+	// ESLint same-file rule is later; svelte-check is out of v1.
 </script>
 
 <svelte:head>

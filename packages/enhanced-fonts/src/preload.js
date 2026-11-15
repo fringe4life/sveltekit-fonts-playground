@@ -9,19 +9,21 @@ const CJK_SUBSETS = new Set([
 ]);
 
 /**
- * Collapse duplicate hrefs (same hashed file, multiple weights) so `<Font>`
- * does not throw `each_key_duplicate` when keyed on `link.href`.
- *
- * @param {Array<{ href: string; type: string; subset?: string }>} preloads
- * @returns {Array<{ href: string; type: string; subset?: string }>}
+ * @template {{ href: string }} T
+ * @param {T[]} entries
+ * @returns {T[]}
  */
-export function unique_by_href(preloads) {
+export function unique_by_href(entries) {
+	/** @type {Set<string>} */
 	const seen = new Set();
-	return preloads.filter((entry) => {
-		if (seen.has(entry.href)) return false;
+	/** @type {T[]} */
+	const unique = [];
+	for (const entry of entries) {
+		if (seen.has(entry.href)) continue;
 		seen.add(entry.href);
-		return true;
-	});
+		unique.push(entry);
+	}
+	return unique;
 }
 
 /**
