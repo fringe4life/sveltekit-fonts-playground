@@ -44,6 +44,11 @@ async function load_adapter() {
 	if (adapter_name === 'static') {
 		return factory({ fallback: '404.html' });
 	}
+	// adapter-vercel@7.0.1 only accepts nodejs22.x / nodejs24.x. Vercel Git
+	// builds on Node 26 by default and get_default_runtime() throws otherwise.
+	if (adapter_name === 'vercel') {
+		return factory({ runtime: 'nodejs22.x' });
+	}
 	return factory();
 }
 
